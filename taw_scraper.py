@@ -8,10 +8,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-parser = argparse.ArgumentParser(description='Simple tawdis.net scraper.')
+parser = argparse.ArgumentParser(
+    description='Simple tawdis.net scraper. Output a jsonline.',
+    epilog='Example: python taw_scraper.py to_download.csv out_file.jsonl')
 # path_firefox, path_gecko, to_download, out_file
-parser.add_argument('download_list', help='urls to evaluate')
-parser.add_argument('out_file', help='out file')
+parser.add_argument('download_list',
+                    help='file with urls to evaluate, one url per line is expected')
+parser.add_argument('out_file', help='name of the out file')
 
 parser.add_argument('-f', '--firefox', help='path to firefox (if firefox is not in the path)')
 parser.add_argument('-g', '--geckodriver', help='path to geckodriver (default: ./geckodriver)')
