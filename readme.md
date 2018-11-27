@@ -17,6 +17,6 @@ See `python taw_scraper.py -h`
 
 ## todo
 
-[ ] skip invalid pages
-[ ] skip page in timeout errors
-[ ] continue scraper for long runs
+[ ] skip invalid pages  
+[ ] skip page in timeout errors  
+[ ] continue scraper for long runs  
