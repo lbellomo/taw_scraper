@@ -1,5 +1,6 @@
 import json
 import argparse
+from time import time, sleep
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -24,7 +25,7 @@ def load_page(driver, page_url, first_load=False, timeout=60):
     url = 'https://www.tawdis.net/'
 
     driver.get(url)
-    
+
     if first_load:
         # click in the "accept-cookies"
         elem = driver.find_element_by_id('aceptarCookiesLink')
@@ -34,7 +35,7 @@ def load_page(driver, page_url, first_load=False, timeout=60):
     elem.clear()
     elem.send_keys(page_url)
     elem.send_keys(Keys.RETURN)
-    
+
     wait_to_load = WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located((By.CLASS_NAME, "automaticos"))
         )
@@ -102,7 +103,7 @@ def scrape_source(page_source):
                 temp_name = (
                     row_list[0].text
                     .split('-', maxsplit=1)[1]
-                    .lower().replace(' ', '_') 
+                    .lower().replace(' ', '_')
                 )
                 row_name = table_name + '_' + temp_name + '_'
                 #row_list[1].text
@@ -128,8 +129,8 @@ def scrape_source(page_source):
 
                 out[row_name + 'problems'] = row_list[3].text
                 out[row_name + 'warnings'] = row_list[4].text
-                out[row_name + 'not_reviewed'] = row_list[5].text 
-    
+                out[row_name + 'not_reviewed'] = row_list[5].text
+
     return out
 
 def main():
@@ -140,7 +141,7 @@ def main():
     else:
         firefox_path = args.firefox
 
-        
+
     if not args.geckodriver:
         geckodriver_path = './geckodriver'
     else:
@@ -153,23 +154,31 @@ def main():
     )
     out_list = []
 
-    with open(download_list_path, 'r') as f:
-        for i, page_url in enumerate(f):
+    with open(download_list_path, 'r') as to_download_file, \
+         open(out_file_path, 'w') as out_file:
+
+        for i, page_url in enumerate(to_download_file):
+            # Miramos si ya esta bajado
+            # if
             if not i:
+                old_time = time()
                 load_page(driver, page_url, first_load=True)
                 out = scrape_source(driver.page_source)
             else:
+                new_time = time()
+                # Esperamos 5 segundos de mas
+                while new_time - old_time < 25:
+                    sleep(1)
+                    new_time = time()
+
+                old_time = time()
                 load_page(driver, page_url)
                 out = scrape_source(driver.page_source)
-            
-            out_list.append(out)
-        
-        driver.close()
+            # Salvamos lo bajado
+            json.dump(out, out_file)
+            out_file.write('\n')
 
-    with open(out_file_path, 'w') as f:
-        for out_json in out_list:
-            json.dump(out_json, f)
-            f.write('\n')
+        driver.close()
 
 if __name__=='__main__':
     main()

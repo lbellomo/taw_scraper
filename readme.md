@@ -19,4 +19,5 @@ See `python taw_scraper.py -h`
 
 [ ] skip invalid pages  
 [ ] skip page in timeout errors  
-[ ] continue scraper for long runs  
+[ ] wait 20 seconds in consecutive requests
+[ ] skip the limitation of 10 request in a hour
