@@ -17,7 +17,10 @@ See `python taw_scraper.py -h`
 
 ## todo
 
-[ ] skip invalid pages  
-[ ] skip page in timeout errors  
-[ ] wait 20 seconds in consecutive requests
+[ ] skip invalid pages
+[ ] skip page in timeout errors
+[X] resume scraper
+[X] wait 20 seconds in consecutive requests
 [ ] skip the limitation of 10 request in a hour
+[ ] make more verbose
+[ ] option to change taw options (Level and Technologies)
