@@ -13,12 +13,15 @@ parser = argparse.ArgumentParser(
     description='Simple tawdis.net scraper. Output a jsonline.',
     epilog='Example: python taw_scraper.py to_download.csv out_file.jsonl')
 # path_firefox, path_gecko, to_download, out_file
-parser.add_argument('download_list',
-                    help='file with urls to evaluate, one url per line is expected')
+parser.add_argument('download_list', help=('file with urls to evaluate, ',
+                                           'one url per line is expected'))
 parser.add_argument('out_file', help='name of the out file')
-
-parser.add_argument('-f', '--firefox', help='path to firefox (if firefox is not in the path)')
-parser.add_argument('-g', '--geckodriver', help='path to geckodriver (default: ./geckodriver)')
+parser.add_argument('-f', '--firefox',
+                    help='path to firefox (if firefox is not in the path)')
+parser.add_argument('-g', '--geckodriver',
+                    help='path to geckodriver (default: ./geckodriver)')
+parser.add_argument('-r', '--resume', action='store_true',
+                    help='resume the scraper')
 args = parser.parse_args()
 
 def load_page(driver, page_url, first_load=False, timeout=60):
@@ -141,29 +144,42 @@ def main():
     else:
         firefox_path = args.firefox
 
-
     if not args.geckodriver:
         geckodriver_path = './geckodriver'
     else:
         geckodriver_path = args.geckodriver
+
+    if args.resume:
+        import pandas as pd
+        try:
+            skip_list = pd.read_json(out_file_path, lines=True)['resource'].tolist()
+        except:
+            skip_list = []
+
+        print(f'{len(skip_list)} urls already downloaded')
 
 
     driver = webdriver.Firefox(
         firefox_binary=firefox_path,
         executable_path=geckodriver_path
     )
-    out_list = []
+    is_first = True
 
     with open(download_list_path, 'r') as to_download_file, \
-         open(out_file_path, 'w') as out_file:
+         open(out_file_path, 'a') as out_file:
 
-        for i, page_url in enumerate(to_download_file):
+        for page_url in iter(to_download_file.readline, ''):
+            print(f'Downloading {page_url}')
             # Miramos si ya esta bajado
-            # if
-            if not i:
+            if args.resume and any([page_url.strip() in skip_url for skip_url in skip_list]):
+                print(f'Already download, skip {page_url}')
+                continue
+
+            if is_first:
                 old_time = time()
                 load_page(driver, page_url, first_load=True)
                 out = scrape_source(driver.page_source)
+                is_first = False
             else:
                 new_time = time()
                 # Esperamos 5 segundos de mas
